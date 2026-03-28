@@ -10,6 +10,9 @@ import {
   Save,
   X,
   Guitar,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeftRight,
 } from "lucide-react";
 import {
   Preset,
@@ -17,9 +20,13 @@ import {
   EffectCategory,
   CATEGORY_LABELS,
   CATEGORY_COLORS,
+  PEDAL_COLORS,
   getEffectsByCategory,
 } from "@/lib/data";
 import { getPresets, savePreset, deletePreset, generateId } from "@/lib/store";
+import { SignalChain } from "@/components/SignalChain";
+import { PedalCard } from "@/components/PedalCard";
+import { AmpCard } from "@/components/AmpCard";
 
 type View =
   | { type: "library" }
@@ -43,6 +50,8 @@ export default function App() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [draft, setDraft] = useState<Preset>(emptyPreset());
   const [loaded, setLoaded] = useState(false);
+  const [detailSlot, setDetailSlot] = useState<EffectCategory | null>(null);
+  const [showSongInfo, setShowSongInfo] = useState(false);
 
   useEffect(() => {
     setPresets(getPresets());
@@ -53,11 +62,13 @@ export default function App() {
 
   const openNewPreset = () => {
     setDraft(emptyPreset());
+    setShowSongInfo(false);
     setView({ type: "editor", presetId: null });
   };
 
   const openEditPreset = (p: Preset) => {
     setDraft({ ...p });
+    setShowSongInfo(!!(p.songName || p.artistName || p.notes));
     setView({ type: "editor", presetId: p.id });
   };
 
@@ -77,6 +88,20 @@ export default function App() {
     deletePreset(draft.id);
     refreshPresets();
     setView({ type: "library" });
+  };
+
+  const handleSlotClick = (slot: "amp" | EffectCategory) => {
+    if (slot === "amp") {
+      setView({ type: "amp-picker" });
+    } else {
+      // If the slot has an effect, show the detail overlay
+      if (draft.effects[slot]) {
+        setDetailSlot(slot);
+      } else {
+        // Empty slot — go straight to picker
+        setView({ type: "effect-picker", category: slot });
+      }
+    }
   };
 
   if (!loaded) {
@@ -119,7 +144,7 @@ export default function App() {
                 onClick={() => openEditPreset(p)}
                 className="w-full text-left bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 active:scale-[0.98] transition-transform"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0 flex-1">
                     <h3 className="font-[family-name:var(--font-mono)] text-sm font-bold text-[var(--color-text)] truncate">
                       {p.name || p.ampModel}
@@ -131,28 +156,16 @@ export default function App() {
                         {p.artistName ? ` — ${p.artistName}` : ""}
                       </p>
                     )}
-                    <p className="text-xs text-[var(--color-text-faint)] mt-1 font-[family-name:var(--font-mono)]">
-                      {p.ampModel}
-                    </p>
                   </div>
-                  <div className="flex gap-1.5 mt-1 shrink-0">
-                    {(
-                      ["stompbox", "modulation", "delay", "reverb"] as const
-                    ).map((cat) => (
-                      <div
-                        key={cat}
-                        className="w-2.5 h-2.5 rounded-full transition-all"
-                        style={{
-                          backgroundColor: p.effects[cat]
-                            ? CATEGORY_COLORS[cat]
-                            : "var(--color-border)",
-                          boxShadow: p.effects[cat]
-                            ? `0 0 6px ${CATEGORY_COLORS[cat]}40`
-                            : "none",
-                        }}
-                      />
-                    ))}
-                  </div>
+                </div>
+                {/* Mini signal chain preview */}
+                <div className="flex items-center justify-center">
+                  <SignalChain
+                    ampModel={p.ampModel}
+                    effects={p.effects}
+                    onSlotClick={() => { }}
+                    size="sm"
+                  />
                 </div>
               </button>
             ))}
@@ -193,30 +206,31 @@ export default function App() {
                 setDraft((d) => ({ ...d, ampModel: amp.name }));
                 setView({ type: "editor", presetId: draft.id });
               }}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between ${
-                draft.ampModel === amp.name
+              className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between gap-3 ${draft.ampModel === amp.name
                   ? "bg-[var(--color-amber)]/10 border border-[var(--color-amber)]/30"
                   : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
-              }`}
+                }`}
             >
-              <div>
-                <p
-                  className={`font-[family-name:var(--font-mono)] text-sm font-bold ${
-                    draft.ampModel === amp.name
-                      ? "text-[var(--color-amber)]"
-                      : "text-[var(--color-text)]"
-                  }`}
-                >
-                  {amp.name}
-                </p>
-                {amp.description && (
-                  <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                    {amp.description}
+              <div className="flex items-center gap-3 min-w-0">
+                <AmpCard modelName={amp.name} size="sm" />
+                <div className="min-w-0">
+                  <p
+                    className={`font-[family-name:var(--font-mono)] text-sm font-bold ${draft.ampModel === amp.name
+                        ? "text-[var(--color-amber)]"
+                        : "text-[var(--color-text)]"
+                      }`}
+                  >
+                    {amp.name}
                   </p>
-                )}
+                  {amp.description && (
+                    <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
+                      {amp.description}
+                    </p>
+                  )}
+                </div>
               </div>
               {draft.ampModel === amp.name && (
-                <div className="w-2 h-2 rounded-full bg-[var(--color-amber)] led-glow" />
+                <div className="w-2 h-2 rounded-full bg-[var(--color-amber)] led-glow shrink-0" />
               )}
             </button>
           ))}
@@ -253,11 +267,10 @@ export default function App() {
               }));
               setView({ type: "editor", presetId: draft.id });
             }}
-            className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-              draft.effects[cat] === null
+            className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${draft.effects[cat] === null
                 ? "bg-[var(--color-surface-raised)] border border-[var(--color-border-bright)]"
                 : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
-            }`}
+              }`}
           >
             <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--color-text-faint)]">
               NONE
@@ -265,6 +278,7 @@ export default function App() {
           </button>
           {effects.map((fx) => {
             const isSelected = draft.effects[cat] === fx.name;
+            const pedalColor = PEDAL_COLORS[fx.name];
             return (
               <button
                 key={fx.name}
@@ -275,29 +289,40 @@ export default function App() {
                   }));
                   setView({ type: "editor", presetId: draft.id });
                 }}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between ${
-                  isSelected
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between gap-3 ${isSelected
                     ? "border"
                     : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
-                }`}
+                  }`}
                 style={
                   isSelected
                     ? {
-                        backgroundColor: `${color}10`,
-                        borderColor: `${color}40`,
-                      }
+                      backgroundColor: `${color}10`,
+                      borderColor: `${color}40`,
+                    }
                     : {}
                 }
               >
-                <p
-                  className="font-[family-name:var(--font-mono)] text-sm font-bold"
-                  style={{ color: isSelected ? color : "var(--color-text)" }}
-                >
-                  {fx.name}
-                </p>
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Mini pedal swatch */}
+                  <div
+                    className="w-8 h-10 rounded shrink-0"
+                    style={{
+                      background: pedalColor
+                        ? `linear-gradient(160deg, ${pedalColor.accent}, ${pedalColor.body})`
+                        : `linear-gradient(160deg, ${color}80, ${color})`,
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                    }}
+                  />
+                  <p
+                    className="font-[family-name:var(--font-mono)] text-sm font-bold"
+                    style={{ color: isSelected ? color : "var(--color-text)" }}
+                  >
+                    {fx.name}
+                  </p>
+                </div>
                 {isSelected && (
                   <div
-                    className="w-2 h-2 rounded-full"
+                    className="w-2 h-2 rounded-full shrink-0"
                     style={{
                       backgroundColor: color,
                       boxShadow: `0 0 6px ${color}`,
@@ -315,10 +340,53 @@ export default function App() {
   // === EDITOR VIEW ===
   const isEditing = presets.some((p) => p.id === draft.id);
   const canSave = draft.ampModel !== "";
-  const activeEffectCount = Object.values(draft.effects).filter(Boolean).length;
 
   return (
     <div className="min-h-dvh pb-12 animate-fade-in">
+      {/* Pedal Detail Overlay */}
+      {detailSlot && draft.effects[detailSlot] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in"
+          onClick={() => setDetailSlot(null)}
+        >
+          <div
+            className="flex flex-col items-center gap-6 animate-zoom-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PedalCard
+              effectName={draft.effects[detailSlot]!}
+              size="lg"
+              onClick={() => setDetailSlot(null)}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDetailSlot(null);
+                  setView({ type: "effect-picker", category: detailSlot });
+                }}
+                className="px-5 py-2.5 rounded-lg bg-[var(--color-surface-raised)] border border-[var(--color-border-bright)] text-[var(--color-text)] font-[family-name:var(--font-mono)] text-xs flex items-center gap-2 active:scale-95 transition-transform"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                REPLACE
+              </button>
+              <button
+                onClick={() => {
+                  setDraft((d) => ({
+                    ...d,
+                    effects: { ...d.effects, [detailSlot]: null },
+                  }));
+                  setDetailSlot(null);
+                }}
+                className="px-5 py-2.5 rounded-lg bg-red-950/40 border border-red-900/30 text-red-400 font-[family-name:var(--font-mono)] text-xs flex items-center gap-2 active:scale-95 transition-transform"
+              >
+                <X className="w-3.5 h-3.5" />
+                REMOVE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-border)] px-4 py-4 flex items-center justify-between">
         <button
@@ -329,7 +397,7 @@ export default function App() {
           <span className="text-sm">Back</span>
         </button>
         <h2 className="font-[family-name:var(--font-display)] text-xl tracking-wide">
-          {isEditing ? "EDIT PRESET" : "NEW PRESET"}
+          {draft.ampModel || (isEditing ? "EDIT PRESET" : "NEW PRESET")}
         </h2>
         <div className="w-16" />
       </header>
@@ -349,146 +417,69 @@ export default function App() {
           />
         </div>
 
-        {/* Amp Selector */}
+        {/* Signal Chain */}
         <div>
-          <label className="block text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-2">
-            Amplifier
+          <label className="block text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-3">
+            Signal Chain
           </label>
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
+            <SignalChain
+              ampModel={draft.ampModel}
+              effects={draft.effects}
+              onSlotClick={handleSlotClick}
+              size="md"
+            />
+          </div>
+          <p className="text-[10px] text-[var(--color-text-faint)] mt-2 text-center font-[family-name:var(--font-mono)]">
+            TAP A SLOT TO CHANGE • TAP A PEDAL FOR DETAILS
+          </p>
+        </div>
+
+        {/* Song Info (collapsible) */}
+        <div>
           <button
-            onClick={() => setView({ type: "amp-picker" })}
-            className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 text-left active:bg-[var(--color-surface-raised)] transition-colors"
+            onClick={() => setShowSongInfo(!showSongInfo)}
+            className="flex items-center gap-2 text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-2 w-full"
           >
-            {draft.ampModel ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[var(--color-amber)]/10 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-[var(--color-amber)]" />
-                  </div>
-                  <div>
-                    <p className="font-[family-name:var(--font-mono)] text-sm font-bold text-[var(--color-amber)]">
-                      {draft.ampModel}
-                    </p>
-                    <p className="text-xs text-[var(--color-text-faint)]">
-                      {AMP_MODELS.find((a) => a.name === draft.ampModel)
-                        ?.description || ""}
-                    </p>
-                  </div>
-                </div>
-                <ChevronLeft className="w-4 h-4 text-[var(--color-text-faint)] rotate-180" />
-              </div>
+            <span>Song & Notes</span>
+            <span className="text-[var(--color-text-faint)] normal-case">(optional)</span>
+            {showSongInfo ? (
+              <ChevronUp className="w-3 h-3 ml-auto" />
             ) : (
-              <div className="flex items-center justify-between">
-                <p className="text-[var(--color-text-faint)] text-sm">
-                  Select an amplifier...
-                </p>
-                <ChevronLeft className="w-4 h-4 text-[var(--color-text-faint)] rotate-180" />
-              </div>
+              <ChevronDown className="w-3 h-3 ml-auto" />
             )}
           </button>
-        </div>
-
-        {/* Effects Chain */}
-        <div>
-          <label className="block text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-2">
-            Effects Chain{" "}
-            <span className="text-[var(--color-text-faint)]">
-              ({activeEffectCount}/4)
-            </span>
-          </label>
-          <div className="grid grid-cols-2 gap-2.5">
-            {(["stompbox", "modulation", "delay", "reverb"] as const).map(
-              (cat) => {
-                const color = CATEGORY_COLORS[cat];
-                const active = draft.effects[cat];
-                return (
-                  <button
-                    key={cat}
-                    onClick={() =>
-                      setView({ type: "effect-picker", category: cat })
-                    }
-                    className="relative bg-[var(--color-surface)] border rounded-xl p-3.5 text-left active:scale-[0.97] transition-all"
-                    style={{
-                      borderColor: active ? `${color}30` : "var(--color-border)",
-                      backgroundColor: active
-                        ? `${color}08`
-                        : "var(--color-surface)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span
-                        className="text-[10px] uppercase tracking-widest font-[family-name:var(--font-mono)]"
-                        style={{
-                          color: active ? color : "var(--color-text-faint)",
-                        }}
-                      >
-                        {CATEGORY_LABELS[cat]}
-                      </span>
-                      <div
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{
-                          backgroundColor: active
-                            ? color
-                            : "var(--color-border)",
-                          boxShadow: active ? `0 0 4px ${color}` : "none",
-                        }}
-                      />
-                    </div>
-                    <p
-                      className="font-[family-name:var(--font-mono)] text-xs font-bold truncate"
-                      style={{
-                        color: active ? "var(--color-text)" : "var(--color-text-faint)",
-                      }}
-                    >
-                      {active || "—"}
-                    </p>
-                  </button>
-                );
-              }
-            )}
-          </div>
-        </div>
-
-        {/* Song Info (optional) */}
-        <div>
-          <label className="block text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-2">
-            Song <span className="normal-case">(optional)</span>
-          </label>
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={draft.songName || ""}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, songName: e.target.value }))
-              }
-              placeholder="Song name"
-              className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm"
-            />
-            <input
-              type="text"
-              value={draft.artistName || ""}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, artistName: e.target.value }))
-              }
-              placeholder="Artist"
-              className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-[family-name:var(--font-mono)] mb-2">
-            Notes <span className="normal-case">(optional)</span>
-          </label>
-          <textarea
-            value={draft.notes || ""}
-            onChange={(e) =>
-              setDraft((d) => ({ ...d, notes: e.target.value }))
-            }
-            placeholder="Tone notes, guitar used, etc..."
-            rows={3}
-            className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm resize-none"
-          />
+          {showSongInfo && (
+            <div className="space-y-2 animate-fade-in">
+              <input
+                type="text"
+                value={draft.songName || ""}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, songName: e.target.value }))
+                }
+                placeholder="Song name"
+                className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm"
+              />
+              <input
+                type="text"
+                value={draft.artistName || ""}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, artistName: e.target.value }))
+                }
+                placeholder="Artist"
+                className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm"
+              />
+              <textarea
+                value={draft.notes || ""}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, notes: e.target.value }))
+                }
+                placeholder="Tone notes, guitar used, etc..."
+                rows={3}
+                className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-amber)]/50 transition-colors text-sm resize-none"
+              />
+            </div>
+          )}
         </div>
 
         {/* Actions */}
@@ -496,11 +487,10 @@ export default function App() {
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className={`w-full py-3.5 rounded-xl font-[family-name:var(--font-display)] text-lg tracking-wider flex items-center justify-center gap-2 transition-all ${
-              canSave
+            className={`w-full py-3.5 rounded-xl font-[family-name:var(--font-display)] text-lg tracking-wider flex items-center justify-center gap-2 transition-all ${canSave
                 ? "bg-[var(--color-amber)] text-black active:scale-[0.98]"
                 : "bg-[var(--color-surface)] text-[var(--color-text-faint)] cursor-not-allowed"
-            }`}
+              }`}
           >
             <Save className="w-4 h-4" />
             {isEditing ? "UPDATE PRESET" : "SAVE PRESET"}
