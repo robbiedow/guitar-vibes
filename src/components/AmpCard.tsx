@@ -9,7 +9,7 @@ interface AmpCardProps {
 export function AmpCard({ modelName, size = "md", onClick }: AmpCardProps) {
     const sizeClasses = {
         sm: { wrapper: "w-[56px] h-[68px]", grille: "h-[32px]", text: "text-[5px]", nameText: "text-[4.5px]", knob: "w-[5px] h-[5px]", topPad: "pt-[3px] pb-[2px]", knobGap: "gap-[2px]" },
-        md: { wrapper: "w-[72px] h-[90px]", grille: "h-[40px]", text: "text-[6px]", nameText: "text-[6px]", knob: "w-[6px] h-[6px]", topPad: "pt-[4px] pb-[2px]", knobGap: "gap-[3px]" },
+        md: { wrapper: "w-[58px] h-[72px]", grille: "h-[32px]", text: "text-[5.5px]", nameText: "text-[5px]", knob: "w-[5px] h-[5px]", topPad: "pt-[3px] pb-[2px]", knobGap: "gap-[2px]" },
         lg: { wrapper: "w-[220px] h-[280px]", grille: "h-[140px]", text: "text-[12px]", nameText: "text-[14px]", knob: "w-[20px] h-[20px]", topPad: "pt-[12px] pb-[8px]", knobGap: "gap-[8px]" },
     };
 

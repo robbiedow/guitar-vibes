@@ -27,7 +27,7 @@ function EmptySlot({
     const color = CATEGORY_COLORS[category];
     const sizeClasses = {
         sm: { wrapper: "w-[48px] h-[62px]", icon: "w-3 h-3", text: "text-[5px]" },
-        md: { wrapper: "w-[56px] h-[74px]", icon: "w-4 h-4", text: "text-[6.5px]" },
+        md: { wrapper: "w-[46px] h-[60px]", icon: "w-3.5 h-3.5", text: "text-[7.5px]" },
     };
     const s = sizeClasses[size];
 
@@ -63,7 +63,7 @@ function EmptyAmpSlot({
 }) {
     const sizeClasses = {
         sm: { wrapper: "w-[56px] h-[68px]", icon: "w-3 h-3", text: "text-[5px]" },
-        md: { wrapper: "w-[72px] h-[90px]", icon: "w-5 h-5", text: "text-[7px]" },
+        md: { wrapper: "w-[58px] h-[72px]", icon: "w-4 h-4", text: "text-[7.5px]" },
     };
     const s = sizeClasses[size];
 
@@ -81,7 +81,7 @@ function EmptyAmpSlot({
 }
 
 function CableConnector({ size = "md" }: { size?: "sm" | "md" }) {
-    const w = size === "sm" ? "w-[8px]" : "w-[12px]";
+    const w = size === "sm" ? "w-[8px]" : "w-[8px]";
     return (
         <div className={`${w} flex items-center self-center`}>
             <div className="w-full h-[3px] bg-gradient-to-r from-zinc-600 via-zinc-500 to-zinc-600 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
@@ -108,8 +108,8 @@ export function SignalChain({ ampModel, effects, onSlotClick, size = "md" }: Sig
     const ampSize = size;
 
     return (
-        <div className="signal-chain-wrapper overflow-x-auto pb-2">
-            <div className="flex items-center justify-center gap-0 min-w-max px-2">
+        <div className="signal-chain-wrapper pb-2">
+            <div className="flex items-center justify-center gap-0 px-1">
                 <EndLabel label="INPUT" size={size} />
                 <CableConnector size={size} />
 
