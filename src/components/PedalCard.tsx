@@ -13,7 +13,7 @@ export function PedalCard({ effectName, size = "md", onClick }: PedalCardProps) 
 
     const sizeClasses = {
         sm: { wrapper: "w-[48px] h-[62px]", knob: "w-[7px] h-[7px]", stomp: "w-[10px] h-[10px]", text: "text-[5px]", nameText: "text-[5.5px]", knobGap: "gap-[3px]", ledSize: "w-[3px] h-[3px]" },
-        md: { wrapper: "w-[72px] h-[96px]", knob: "w-[11px] h-[11px]", stomp: "w-[16px] h-[16px]", text: "text-[6px]", nameText: "text-[7.5px]", knobGap: "gap-[6px]", ledSize: "w-[4px] h-[4px]" },
+        md: { wrapper: "w-[56px] h-[74px]", knob: "w-[9px] h-[9px]", stomp: "w-[13px] h-[13px]", text: "text-[5.5px]", nameText: "text-[6.5px]", knobGap: "gap-[4px]", ledSize: "w-[3px] h-[3px]" },
         lg: { wrapper: "w-[180px] h-[260px]", knob: "w-[32px] h-[32px]", stomp: "w-[44px] h-[44px]", text: "text-[10px]", nameText: "text-[14px]", knobGap: "gap-[16px]", ledSize: "w-[6px] h-[6px]" },
     };
 

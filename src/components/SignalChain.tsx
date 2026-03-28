@@ -27,7 +27,7 @@ function EmptySlot({
     const color = CATEGORY_COLORS[category];
     const sizeClasses = {
         sm: { wrapper: "w-[48px] h-[62px]", icon: "w-3 h-3", text: "text-[5px]" },
-        md: { wrapper: "w-[72px] h-[96px]", icon: "w-5 h-5", text: "text-[7px]" },
+        md: { wrapper: "w-[56px] h-[74px]", icon: "w-4 h-4", text: "text-[6.5px]" },
     };
     const s = sizeClasses[size];
 
@@ -63,7 +63,7 @@ function EmptyAmpSlot({
 }) {
     const sizeClasses = {
         sm: { wrapper: "w-[56px] h-[68px]", icon: "w-3 h-3", text: "text-[5px]" },
-        md: { wrapper: "w-[96px] h-[116px]", icon: "w-6 h-6", text: "text-[8px]" },
+        md: { wrapper: "w-[72px] h-[90px]", icon: "w-5 h-5", text: "text-[7px]" },
     };
     const s = sizeClasses[size];
 
@@ -81,7 +81,7 @@ function EmptyAmpSlot({
 }
 
 function CableConnector({ size = "md" }: { size?: "sm" | "md" }) {
-    const w = size === "sm" ? "w-[12px]" : "w-[20px]";
+    const w = size === "sm" ? "w-[8px]" : "w-[12px]";
     return (
         <div className={`${w} flex items-center self-center`}>
             <div className="w-full h-[3px] bg-gradient-to-r from-zinc-600 via-zinc-500 to-zinc-600 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
