@@ -14,6 +14,8 @@ import {
   ChevronUp,
   ArrowLeftRight,
   LogOut,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import {
   Preset,
@@ -28,13 +30,15 @@ import { getPresets, savePreset, deletePreset, generateId } from "@/lib/store";
 import { SignalChain } from "@/components/SignalChain";
 import { PedalCard } from "@/components/PedalCard";
 import { AmpCard } from "@/components/AmpCard";
+import { ToneChat } from "@/components/ToneChat";
 import { signOut } from "next-auth/react";
 
 type View =
   | { type: "library" }
   | { type: "editor"; presetId: string | null }
   | { type: "amp-picker" }
-  | { type: "effect-picker"; category: EffectCategory };
+  | { type: "effect-picker"; category: EffectCategory }
+  | { type: "chat" };
 
 function emptyPreset(): Preset {
   return {
@@ -54,6 +58,8 @@ export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [detailSlot, setDetailSlot] = useState<EffectCategory | null>(null);
   const [showSongInfo, setShowSongInfo] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiReasoning, setAiReasoning] = useState<string | null>(null);
 
   useEffect(() => {
     setPresets(getPresets());
@@ -106,12 +112,51 @@ export default function App() {
     }
   };
 
+  const handleAiSuggest = async () => {
+    setAiLoading(true);
+    setAiReasoning(null);
+    try {
+      const res = await fetch("/api/suggest-preset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          song_name: draft.songName || undefined,
+          artist: draft.artistName || undefined,
+          notes: draft.notes || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setDraft((d) => ({
+        ...d,
+        ampModel: data.amp_model || d.ampModel,
+        effects: {
+          stompbox: data.effects?.stompbox ?? d.effects.stompbox,
+          modulation: data.effects?.modulation ?? d.effects.modulation,
+          delay: data.effects?.delay ?? d.effects.delay,
+          reverb: data.effects?.reverb ?? d.effects.reverb,
+        },
+      }));
+      setAiReasoning(data.reasoning || null);
+    } catch (e) {
+      console.error("AI suggestion failed:", e);
+      setAiReasoning("Failed to get suggestion. Is the AI backend running?");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   if (!loaded) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-[var(--color-bg)]">
         <Zap className="w-8 h-8 text-[var(--color-amber)] animate-pulse" />
       </div>
     );
+  }
+
+  // === CHAT VIEW ===
+  if (view.type === "chat") {
+    return <ToneChat onBack={() => setView({ type: "library" })} />;
   }
 
   // === LIBRARY VIEW ===
@@ -183,13 +228,22 @@ export default function App() {
           </div>
         )}
 
-        {/* FAB */}
-        <button
-          onClick={openNewPreset}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--color-amber)] text-black flex items-center justify-center shadow-lg shadow-[var(--color-amber)]/20 active:scale-95 transition-transform"
-        >
-          <Plus className="w-6 h-6" strokeWidth={2.5} />
-        </button>
+        {/* FABs */}
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3">
+          <button
+            onClick={() => setView({ type: "chat" })}
+            className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/20 active:scale-95 transition-transform"
+            title="Chat with ToneBot"
+          >
+            <Sparkles className="w-5 h-5" />
+          </button>
+          <button
+            onClick={openNewPreset}
+            className="w-14 h-14 rounded-full bg-[var(--color-amber)] text-black flex items-center justify-center shadow-lg shadow-[var(--color-amber)]/20 active:scale-95 transition-transform"
+          >
+            <Plus className="w-6 h-6" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
     );
   }
@@ -444,6 +498,26 @@ export default function App() {
           <p className="text-[10px] text-[var(--color-text-faint)] mt-2 text-center font-[family-name:var(--font-mono)]">
             TAP A SLOT TO CHANGE • TAP A PEDAL FOR DETAILS
           </p>
+
+          {/* AI Suggest Button */}
+          <button
+            onClick={handleAiSuggest}
+            disabled={aiLoading}
+            className="mt-3 w-full py-2.5 rounded-lg bg-gradient-to-r from-purple-600/20 to-violet-600/20 border border-purple-500/30 text-purple-300 font-[family-name:var(--font-mono)] text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            {aiLoading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5" />
+            )}
+            {aiLoading ? "THINKING..." : "✨ AI SUGGEST"}
+          </button>
+
+          {aiReasoning && (
+            <p className="mt-2 text-xs text-[var(--color-text-dim)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 leading-relaxed">
+              {aiReasoning}
+            </p>
+          )}
         </div>
 
         {/* Song Info (collapsible) */}
