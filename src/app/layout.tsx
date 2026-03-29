@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { RegisterSW } from "@/components/register-sw";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,9 +33,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="antialiased">
+        <AuthProvider>
           <RegisterSW />
           {children}
-        </body>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

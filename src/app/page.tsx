@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowLeftRight,
+  LogOut,
 } from "lucide-react";
 import {
   Preset,
@@ -27,6 +28,7 @@ import { getPresets, savePreset, deletePreset, generateId } from "@/lib/store";
 import { SignalChain } from "@/components/SignalChain";
 import { PedalCard } from "@/components/PedalCard";
 import { AmpCard } from "@/components/AmpCard";
+import { signOut } from "next-auth/react";
 
 type View =
   | { type: "library" }
@@ -117,11 +119,20 @@ export default function App() {
     return (
       <div className="min-h-dvh pb-24 px-4 pt-safe">
         <header className="pt-12 pb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-2 h-2 rounded-full bg-[var(--color-amber)] led-glow" />
-            <h1 className="font-[family-name:var(--font-display)] text-4xl tracking-wide text-[var(--color-text)]">
-              TONEBOARD
-            </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-2 h-2 rounded-full bg-[var(--color-amber)] led-glow" />
+              <h1 className="font-[family-name:var(--font-display)] text-4xl tracking-wide text-[var(--color-text)]">
+                TONEBOARD
+              </h1>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="p-2 text-[var(--color-text-faint)] hover:text-[var(--color-text-dim)] transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
           <p className="text-[var(--color-text-dim)] text-sm ml-5">
             Mustang Micro Plus
@@ -207,8 +218,8 @@ export default function App() {
                 setView({ type: "editor", presetId: draft.id });
               }}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between gap-3 ${draft.ampModel === amp.name
-                  ? "bg-[var(--color-amber)]/10 border border-[var(--color-amber)]/30"
-                  : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
+                ? "bg-[var(--color-amber)]/10 border border-[var(--color-amber)]/30"
+                : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -216,8 +227,8 @@ export default function App() {
                 <div className="min-w-0">
                   <p
                     className={`font-[family-name:var(--font-mono)] text-sm font-bold ${draft.ampModel === amp.name
-                        ? "text-[var(--color-amber)]"
-                        : "text-[var(--color-text)]"
+                      ? "text-[var(--color-amber)]"
+                      : "text-[var(--color-text)]"
                       }`}
                   >
                     {amp.name}
@@ -268,8 +279,8 @@ export default function App() {
               setView({ type: "editor", presetId: draft.id });
             }}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${draft.effects[cat] === null
-                ? "bg-[var(--color-surface-raised)] border border-[var(--color-border-bright)]"
-                : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
+              ? "bg-[var(--color-surface-raised)] border border-[var(--color-border-bright)]"
+              : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
               }`}
           >
             <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--color-text-faint)]">
@@ -290,8 +301,8 @@ export default function App() {
                   setView({ type: "editor", presetId: draft.id });
                 }}
                 className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between gap-3 ${isSelected
-                    ? "border"
-                    : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
+                  ? "border"
+                  : "bg-[var(--color-surface)] border border-transparent active:bg-[var(--color-surface-raised)]"
                   }`}
                 style={
                   isSelected
@@ -488,8 +499,8 @@ export default function App() {
             onClick={handleSave}
             disabled={!canSave}
             className={`w-full py-3.5 rounded-xl font-[family-name:var(--font-display)] text-lg tracking-wider flex items-center justify-center gap-2 transition-all ${canSave
-                ? "bg-[var(--color-amber)] text-black active:scale-[0.98]"
-                : "bg-[var(--color-surface)] text-[var(--color-text-faint)] cursor-not-allowed"
+              ? "bg-[var(--color-amber)] text-black active:scale-[0.98]"
+              : "bg-[var(--color-surface)] text-[var(--color-text-faint)] cursor-not-allowed"
               }`}
           >
             <Save className="w-4 h-4" />
