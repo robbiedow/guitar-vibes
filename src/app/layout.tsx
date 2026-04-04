@@ -4,13 +4,13 @@ import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ToneBoard",
-  description: "Guitar amp preset builder for Fender Mustang Micro Plus",
+  title: "Rob's Tools",
+  description: "A collection of useful tools",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ToneBoard",
+    title: "Rob's Tools",
   },
 };
 

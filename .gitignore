@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+Spotify*/
 
 # next.js
 .next/

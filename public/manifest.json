@@ -1,7 +1,7 @@
 {
-  "name": "ToneBoard",
-  "short_name": "ToneBoard",
-  "description": "Guitar amp preset builder for Fender Mustang Micro Plus",
+  "name": "Rob's Tools",
+  "short_name": "Rob's Tools",
+  "description": "A collection of useful tools",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0c0c0c",

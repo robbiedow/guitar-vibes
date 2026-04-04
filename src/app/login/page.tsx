@@ -14,12 +14,9 @@ export default async function LoginPage() {
                     <div className="flex items-center justify-center gap-3 mb-2">
                         <div className="w-2 h-2 rounded-full bg-[#f59e0b]" style={{ boxShadow: "0 0 8px #f59e0b, 0 0 20px rgba(245,158,11,0.15)" }} />
                         <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2.5rem", letterSpacing: "0.05em", color: "#e8e8e8" }}>
-                            TONEBOARD
+                            ROB&apos;S TOOLS
                         </h1>
                     </div>
-                    <p style={{ color: "#777", fontSize: "0.875rem" }}>
-                        Mustang Micro Plus
-                    </p>
                 </div>
 
                 {/* Sign in form */}
